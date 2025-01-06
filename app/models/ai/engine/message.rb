@@ -5,11 +5,16 @@ module AI::Engine
     belongs_to :messageable, polymorphic: true # AI::Engine::Chat or AI::Engine::AssistantThread
     belongs_to :run, class_name: "AI::Engine::Run", foreign_key: "ai_engine_run_id", optional: true
 
-    enum role: {system: 0, assistant: 10, user: 20}
+    enum :role, {
+      system: 0,
+      assistant: 10,
+      user: 20
+    }, default: :user, validate: true, scopes: true
 
     before_create :create_openai_message,
       if: -> { in_assistant_thread? }, # Chat messages are only stored locally.
       unless: -> { assistant? } # Checking the role - assistant messages on the OpenAI side are created by a Run.
+
     after_create :on_create
     after_update :on_update
 
